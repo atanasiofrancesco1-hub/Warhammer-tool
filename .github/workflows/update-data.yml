@@ -21,18 +21,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
       - name: Install dependencies
         run: |
+          python3 -m pip install --upgrade pip
           pip install requests beautifulsoup4 lxml
 
       - name: Run scraper
         run: |
-          python scraper_ga.py
+          python3 scraper_ga.py
 
       - name: Check for changes
         id: changes
