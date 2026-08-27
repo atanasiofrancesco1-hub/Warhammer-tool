@@ -3,7 +3,7 @@
 WH40K 11th Edition Scraper for GitHub Actions
 ==============================================
 Scarica TUTTI i datasheet da Wahapedia.ru e genera data.json
-con units, rules, compendium e tooltips.
+con units, rules, compendium e tooltips. 
 
 Ottimizzato per girare su GitHub Actions:
 - Nessuna cache su disco (parte sempre da zero)
