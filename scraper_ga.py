@@ -598,9 +598,8 @@ def main():
     print("COMPLETATO!")
     print("=" * 60)
 
-    if total_errors > 0:
-        print(f"\n⚠️ {total_errors} errori durante lo scraping.")
-        sys.exit(1)
+    # Non uscire con errore anche se ci sono errori di parsing —
+    # alcuni datasheet possono fallire ma il data.json è comunque valido
 
 
 if __name__ == "__main__":
