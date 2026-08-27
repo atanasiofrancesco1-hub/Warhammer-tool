@@ -379,8 +379,25 @@ def parse_datasheet(html_text, faction_name):
             parts = text.split(":", 1)
             ab_type = parts[0].strip()
             ab_name = parts[1].strip() if len(parts) > 1 else ""
+            # Cerca la descrizione nel tooltip_templates associato
+            ab_desc = ""
+            tooltip_span = div.find("span", attrs={"data-tooltip-content": True})
+            if tooltip_span:
+                tip_id = tooltip_span.get("data-tooltip-content", "").lstrip("#")
+                tip_el = soup.find(id=tip_id)
+                if tip_el:
+                    # La descrizione è nel primo <p> o nel testo dopo l'header
+                    header = tip_el.find("div", class_="tooltip_header")
+                    p = tip_el.find("p")
+                    if p:
+                        ab_desc = p.get_text(" ", strip=True)
+                    elif header:
+                        # Se non c'è <p>, prendi tutto il testo dopo l'header
+                        full_tip = tip_el.get_text(" ", strip=True)
+                        header_text = header.get_text(strip=True)
+                        ab_desc = full_tip[len(header_text):].strip()
             if ab_name:
-                unit["abilities"].append({"name": ab_type, "desc": ab_name})
+                unit["abilities"].append({"name": ab_type, "desc": ab_name, "full_desc": ab_desc})
             continue
 
         # Pattern 2: "<b>Name:</b> Description"
@@ -442,15 +459,31 @@ def parse_datasheet(html_text, faction_name):
         unit["faction_keywords"] = kws
 
     # === PUNTI ===
-    for pt in soup.find_all("span", class_="PriceTag"):
-        pt_text = pt.get_text(strip=True)
-        m = re.match(r"(\d+)\s*models?\s*:?\s*(\d+)", pt_text, re.I)
-        if m:
-            unit["points"][m.group(1) + " models"] = int(m.group(2))
-        else:
-            m2 = re.search(r"(\d+)", pt_text)
-            if m2:
-                unit["points"]["base"] = int(m2.group(1))
+    # PriceTag è un div, non uno span su Wahapedia
+    # Cerca nella tabella dei costi: <td>5 models</td><td><div class="PriceTag">70</div></td>
+    for table in soup.find_all("table"):
+        for row in table.find_all("tr"):
+            cells = row.find_all("td")
+            if len(cells) >= 2:
+                label = cells[0].get_text(strip=True)
+                price_tag = cells[1].find("div", class_="PriceTag")
+                if price_tag:
+                    price = price_tag.get_text(strip=True)
+                    m = re.search(r"(\d+)", price)
+                    if m:
+                        unit["points"][label] = int(m.group(1))
+
+    # Fallback: PriceTag come span (vecchio formato)
+    if not unit["points"]:
+        for pt in soup.find_all("span", class_="PriceTag"):
+            pt_text = pt.get_text(strip=True)
+            m = re.match(r"(\d+)\s*models?\s*:?\s*(\d+)", pt_text, re.I)
+            if m:
+                unit["points"][m.group(1) + " models"] = int(m.group(2))
+            else:
+                m2 = re.search(r"(\d+)", pt_text)
+                if m2:
+                    unit["points"]["base"] = int(m2.group(1))
 
     # === COMPOSITION ===
     comp_div = soup.find("div", class_="dsComposition")
