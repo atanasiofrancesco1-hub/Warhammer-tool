@@ -1,0 +1,1749 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="theme-color" content="#0a0a0f">
+<meta name="description" content="WH40K 11th Companion - PWA per Warhammer 40,000 11th Edition">
+<title>WH40K 11th Companion</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --panel: #141422;
+  --panel2: #1c1c30;
+  --panel3: #222238;
+  --gold: #c9a84c;
+  --gold-dim: #8a7434;
+  --gold-bright: #e6c860;
+  --text: #d4d4e0;
+  --text-dim: #8a8aa0;
+  --accent: #5b8dd9;
+  --accent2: #4a7bc4;
+  --danger: #d95b5b;
+  --success: #5bd97a;
+  --border: #2a2a40;
+  --border2: #353550;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+a { color: var(--accent); text-decoration: none; }
+
+/* ===== LOADING SCREEN ===== */
+#loader {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 18px;
+  transition: opacity .4s;
+}
+#loader.hide { opacity: 0; pointer-events: none; }
+.loader-sigil {
+  font-size: 54px;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity: .5; transform: scale(.9); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+.loader-text {
+  color: var(--gold); font-weight: 600; letter-spacing: 2px;
+  text-transform: uppercase; font-size: 13px;
+}
+.loader-bar {
+  width: 180px; height: 3px; background: var(--panel2);
+  border-radius: 2px; overflow: hidden;
+}
+.loader-bar > div {
+  height: 100%; width: 40%; background: var(--gold);
+  animation: slide 1s ease-in-out infinite;
+}
+@keyframes slide {
+  0% { margin-left: -40%; }
+  100% { margin-left: 100%; }
+}
+
+/* ===== HEADER ===== */
+header.app-header {
+  position: sticky; top: 0; z-index: 100;
+  background: linear-gradient(180deg, var(--panel2), var(--panel));
+  border-bottom: 2px solid var(--gold);
+  padding: 12px 16px 0;
+  box-shadow: 0 4px 18px rgba(0,0,0,.5);
+}
+.app-title {
+  display: flex; align-items: center; gap: 10px;
+  font-family: 'Times New Roman', serif;
+  font-size: 20px; font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding-bottom: 10px;
+}
+.app-title .sigil { font-size: 24px; }
+.tabs {
+  display: flex; gap: 2px; overflow-x: auto;
+}
+.tab {
+  flex: 1 0 auto;
+  background: transparent; border: none;
+  color: var(--text-dim);
+  padding: 11px 14px;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  white-space: nowrap;
+  transition: color .15s, border-color .15s, background .15s;
+  text-transform: uppercase; letter-spacing: .5px;
+}
+.tab:hover { color: var(--text); background: var(--panel2); }
+.tab.active {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+  background: var(--panel);
+}
+
+/* ===== MAIN ===== */
+main { padding: 14px; max-width: 1100px; margin: 0 auto; padding-bottom: 60px; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ===== CONTROLS ===== */
+.controls {
+  display: flex; gap: 10px; flex-wrap: wrap;
+  margin-bottom: 14px; align-items: center;
+}
+.search-box, select.input, input.input {
+  background: var(--panel2);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  padding: 9px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color .15s;
+}
+.search-box { flex: 1 1 200px; min-width: 160px; }
+.search-box:focus, select.input:focus, input.input:focus { border-color: var(--gold); }
+.btn {
+  background: var(--panel3);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  padding: 9px 14px;
+  border-radius: 6px;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, transform .05s;
+  white-space: nowrap;
+}
+.btn:hover { background: var(--border2); border-color: var(--gold-dim); }
+.btn:active { transform: scale(.97); }
+.btn.gold {
+  background: linear-gradient(180deg, var(--gold), var(--gold-dim));
+  color: #1a1a1a; border-color: var(--gold);
+}
+.btn.gold:hover { background: linear-gradient(180deg, var(--gold-bright), var(--gold)); }
+.btn.accent { background: var(--accent); color: #fff; border-color: var(--accent2); }
+.btn.accent:hover { background: var(--accent2); }
+.btn.danger { background: var(--danger); color: #fff; border-color: #b04545; }
+.btn.danger:hover { background: #b04545; }
+.btn.small { padding: 5px 9px; font-size: 12px; }
+
+/* ===== FACTION SECTIONS (datasheet) ===== */
+.expand-bar {
+  display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;
+}
+.faction-section {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.faction-section > summary {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 14px;
+  cursor: pointer;
+  background: var(--panel2);
+  border-left: 4px solid var(--gold-dim);
+  font-weight: 600; font-size: 14px;
+  list-style: none;
+  user-select: none;
+}
+.faction-section > summary::-webkit-details-marker { display: none; }
+.faction-section > summary::before {
+  content: '▸'; color: var(--gold); font-size: 13px;
+  transition: transform .15s;
+}
+.faction-section[open] > summary::before { transform: rotate(90deg); }
+.faction-section > summary:hover { background: var(--panel3); }
+.faction-logo {
+  width: 28px; height: 28px; object-fit: contain;
+  border-radius: 4px; background: var(--bg);
+}
+.faction-name { flex: 1; color: var(--text); }
+.faction-count {
+  background: var(--panel3); color: var(--gold);
+  font-size: 12px; padding: 2px 9px; border-radius: 10px;
+  border: 1px solid var(--border2);
+}
+
+/* ===== UNIT GRID ===== */
+.unit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+  padding: 12px;
+}
+.unit-card {
+  background: var(--panel2);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 10px;
+  cursor: pointer;
+  transition: border-color .15s, transform .05s, box-shadow .15s;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.unit-card:hover {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 1px var(--gold-dim), 0 4px 12px rgba(0,0,0,.4);
+}
+.unit-card:active { transform: scale(.98); }
+.uc-top { display: flex; align-items: center; gap: 9px; }
+.uc-logo { width: 34px; height: 34px; object-fit: contain; border-radius: 5px; background: var(--bg); flex-shrink: 0; }
+.uc-name { font-weight: 700; font-size: 14px; color: var(--text); flex: 1; line-height: 1.2; }
+.uc-pts { color: var(--gold); font-weight: 700; font-size: 13px; white-space: nowrap; }
+.stat-pills { display: flex; flex-wrap: wrap; gap: 4px; }
+.stat-pill {
+  background: var(--panel3);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 3px 6px;
+  font-size: 11px;
+  display: flex; align-items: center; gap: 3px;
+}
+.stat-pill .lbl { color: var(--gold-dim); font-weight: 700; font-size: 10px; }
+.stat-pill .val { color: var(--text); font-weight: 600; }
+
+/* ===== DETAIL VIEW ===== */
+.detail-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,.7);
+  display: none;
+  padding: 10px;
+  overflow-y: auto;
+}
+.detail-overlay.show { display: flex; justify-content: center; align-items: flex-start; }
+.detail-card {
+  background: var(--panel);
+  border: 1px solid var(--gold-dim);
+  border-radius: 10px;
+  max-width: 760px; width: 100%;
+  margin: 10px auto;
+  overflow: hidden;
+}
+.detail-header {
+  background: linear-gradient(135deg, var(--panel3), var(--panel2));
+  border-bottom: 2px solid var(--gold);
+  padding: 14px;
+  display: flex; align-items: center; gap: 12px;
+  position: sticky; top: 0;
+}
+.detail-header img.dh-logo { width: 48px; height: 48px; object-fit: contain; border-radius: 6px; background: var(--bg); }
+.dh-info { flex: 1; }
+.dh-name { font-size: 19px; font-weight: 800; color: var(--gold); font-family: 'Times New Roman', serif; }
+.dh-faction { font-size: 12px; color: var(--text-dim); }
+.dh-pts { color: var(--gold-bright); font-weight: 700; font-size: 15px; }
+.dh-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.detail-body { padding: 14px; }
+.detail-close {
+  position: absolute; top: 12px; right: 16px;
+  background: var(--panel3); border: 1px solid var(--border2);
+  color: var(--text); width: 30px; height: 30px;
+  border-radius: 50%; cursor: pointer; font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 210;
+}
+.detail-close:hover { background: var(--danger); color: #fff; }
+
+/* stats grid in detail */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.stat-cell {
+  background: var(--panel2);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  padding: 8px 4px;
+  text-align: center;
+}
+.stat-cell .lbl { display: block; color: var(--gold); font-size: 10px; font-weight: 700; letter-spacing: .5px; }
+.stat-cell .val { display: block; color: var(--text); font-size: 16px; font-weight: 700; margin-top: 2px; }
+
+/* ===== WEAPON TABLES (IMPROVED STYLE) ===== */
+.weapon-block { margin-bottom: 18px; }
+.weapon-block-title {
+  font-size: 13px; font-weight: 700;
+  color: var(--gold); text-transform: uppercase;
+  letter-spacing: 1px; margin-bottom: 7px;
+  border-bottom: 1px solid var(--gold-dim);
+  padding-bottom: 4px;
+}
+.wtable {
+  width: 100%; border-collapse: collapse;
+  font-size: 12px;
+  background: var(--panel);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.wtable thead th {
+  background: var(--panel3);
+  color: var(--gold);
+  text-transform: uppercase;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  padding: 8px 6px;
+  text-align: center;
+  border-bottom: 2px solid var(--gold-dim);
+  white-space: nowrap;
+}
+.wtable thead th:first-child { text-align: left; }
+.wtable tbody tr { border-top: 2px solid var(--border2); }
+.wtable tbody tr:nth-child(even) { background: var(--panel2); }
+.wtable tbody td {
+  padding: 8px 6px;
+  text-align: center;
+  border-right: 1px solid var(--border);
+  white-space: nowrap;
+}
+.wtable tbody td:last-child { border-right: none; }
+.wtable tbody td.w-name {
+  text-align: left;
+  background: var(--panel3);
+  font-weight: 700;
+  color: var(--text);
+  border-right: 2px solid var(--gold-dim);
+  min-width: 120px;
+}
+.wtable tbody tr:nth-child(even) td.w-name { background: #28283e; }
+.wtag {
+  color: var(--gold-dim);
+  font-weight: 600;
+  font-size: 10px;
+  margin-left: 5px;
+  display: inline-block;
+}
+.wtable-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* abilities */
+.ability {
+  background: var(--panel2);
+  border-left: 3px solid var(--gold-dim);
+  border-radius: 0 6px 6px 0;
+  padding: 9px 12px;
+  margin-bottom: 8px;
+}
+.ability .ab-name { color: var(--gold); font-weight: 700; font-size: 13px; }
+.ability .ab-type {
+  display: inline-block; font-size: 9px;
+  background: var(--panel3); color: var(--accent);
+  padding: 1px 6px; border-radius: 8px;
+  margin-left: 6px; text-transform: uppercase; letter-spacing: .5px;
+  border: 1px solid var(--border2);
+}
+.ability .ab-desc {
+  color: var(--text); font-size: 13px;
+  margin-top: 4px; line-height: 1.5;
+}
+.detail-section { margin-bottom: 18px; }
+.detail-section h4 {
+  color: var(--gold); font-size: 13px; text-transform: uppercase;
+  letter-spacing: 1px; margin-bottom: 8px;
+  border-bottom: 1px solid var(--border2); padding-bottom: 4px;
+}
+.keyword-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.kw-chip {
+  background: var(--panel3); border: 1px solid var(--border2);
+  color: var(--text); font-size: 11px; font-weight: 600;
+  padding: 3px 8px; border-radius: 4px;
+}
+.composition-box {
+  background: var(--panel2); border: 1px solid var(--border2);
+  border-radius: 6px; padding: 10px 12px;
+  font-size: 13px; color: var(--text);
+}
+
+/* ===== CORE RULES ===== */
+.rule-card {
+  background: var(--panel);
+  border: 1px solid var(--border2);
+  border-left: 4px solid var(--gold);
+  border-radius: 8px;
+  padding: 13px 15px;
+  margin-bottom: 10px;
+}
+.rule-card .rc-title { color: var(--gold); font-weight: 700; font-size: 15px; margin-bottom: 5px; font-family: 'Times New Roman', serif; }
+.rule-card .rc-body { color: var(--text); font-size: 13px; line-height: 1.6; white-space: pre-wrap; }
+.section-divider {
+  display: flex; align-items: center; gap: 12px;
+  margin: 24px 0 14px;
+}
+.section-divider::before, .section-divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--gold-dim);
+}
+.section-divider span { color: var(--gold); font-weight: 700; text-transform: uppercase; letter-spacing: 2px; font-size: 13px; }
+
+/* ===== ARMY BUILDER ===== */
+.ab-stage {
+  background: var(--panel);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+.ab-list-item {
+  background: var(--panel2);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 12px;
+  flex-wrap: wrap;
+  transition: border-color .15s;
+}
+.ab-list-item:hover { border-color: var(--gold-dim); }
+.ab-list-item .li-name { flex: 1; min-width: 140px; font-weight: 700; color: var(--text); font-size: 15px; }
+.ab-list-item .li-meta { color: var(--text-dim); font-size: 12px; }
+.ab-list-item .li-pts { color: var(--gold); font-weight: 700; }
+.form-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; margin-bottom: 12px; }
+.form-field { display: flex; flex-direction: column; gap: 4px; }
+.form-field label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .5px; font-weight: 600; }
+.ab-addrow { display: flex; gap: 8px; flex-wrap: wrap; align-items: end; margin-bottom: 14px; }
+.ab-addrow .form-field { flex: 1; min-width: 160px; }
+.ab-unit-item {
+  background: var(--panel2);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  padding: 9px 12px;
+  margin-bottom: 6px;
+  display: flex; align-items: center; gap: 10px;
+}
+.ab-unit-item .un-name { flex: 1; font-weight: 600; }
+.ab-unit-item .un-models { color: var(--accent); font-weight: 700; }
+.ab-unit-item .un-pts { color: var(--gold); font-weight: 700; }
+
+.points-bar-wrap {
+  background: var(--panel2); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 12px 14px; margin-top: 14px;
+}
+.points-bar {
+  height: 22px; background: var(--bg); border-radius: 11px;
+  overflow: hidden; border: 1px solid var(--border2); position: relative;
+}
+.points-bar > div {
+  height: 100%; border-radius: 11px;
+  background: linear-gradient(90deg, var(--success), var(--gold));
+  transition: width .3s;
+}
+.points-bar.over > div { background: linear-gradient(90deg, var(--gold), var(--danger)); }
+.points-info { display: flex; justify-content: space-between; margin-top: 6px; font-size: 13px; }
+.points-info .pi-total { color: var(--gold); font-weight: 700; }
+.points-info .pi-remain { color: var(--text-dim); }
+
+/* ===== GIOCO ===== */
+.gioco-army-header {
+  background: linear-gradient(135deg, var(--panel3), var(--panel2));
+  border: 1px solid var(--gold-dim);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.gioco-army-header .gh-name { flex: 1; font-size: 17px; font-weight: 800; color: var(--gold); }
+.gioco-army-header .gh-meta { color: var(--text-dim); font-size: 13px; }
+.gioco-unit {
+  background: var(--panel);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+.gioco-unit > summary {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; cursor: pointer;
+  background: var(--panel2); list-style: none;
+  user-select: none;
+}
+.gioco-unit > summary::-webkit-details-marker { display: none; }
+.gioco-unit > summary::before { content: '▸'; color: var(--gold); transition: transform .15s; }
+.gioco-unit[open] > summary::before { transform: rotate(90deg); }
+.gioco-unit .gu-name { flex: 1; font-weight: 700; }
+.gioco-unit .gu-models { color: var(--accent); font-weight: 600; font-size: 12px; }
+.gioco-unit .gu-pts { color: var(--gold); font-weight: 700; }
+.gioco-unit .gu-body { padding: 12px 14px; }
+.gioco-unit .gu-body .stats-grid { grid-template-columns: repeat(6, 1fr); margin-bottom: 12px; }
+
+/* ===== TOOLTIP ===== */
+.tooltip-trigger {
+  color: var(--gold-bright);
+  cursor: help;
+  border-bottom: 1px dotted var(--gold-dim);
+  text-decoration: none;
+}
+#tooltip-popup {
+  position: fixed; z-index: 9999;
+  background: var(--panel3);
+  border: 1px solid var(--gold);
+  border-radius: 8px;
+  padding: 10px 13px;
+  max-width: 300px;
+  box-shadow: 0 8px 28px rgba(0,0,0,.7);
+  display: none;
+  pointer-events: none;
+  font-size: 12px;
+}
+#tooltip-popup.show { display: block; }
+#tooltip-popup .tt-title { color: var(--gold); font-weight: 700; font-size: 13px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .5px; }
+#tooltip-popup .tt-desc { color: var(--text); line-height: 1.4; }
+
+/* empty / info states */
+.empty-state {
+  text-align: center; padding: 40px 20px;
+  color: var(--text-dim);
+}
+.empty-state .es-icon { font-size: 40px; margin-bottom: 10px; }
+.section-title {
+  font-family: 'Times New Roman', serif;
+  color: var(--gold); font-size: 18px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 600px) {
+  main { padding: 10px; padding-bottom: 50px; }
+  .app-title { font-size: 16px; }
+  .tab { padding: 9px 10px; font-size: 12px; }
+  .stats-grid { grid-template-columns: repeat(3, 1fr); }
+  .unit-grid { grid-template-columns: 1fr; }
+  .gioco-unit .gu-body .stats-grid { grid-template-columns: repeat(3, 1fr); }
+  .detail-header { flex-wrap: wrap; }
+  .dh-name { font-size: 16px; }
+  .wtable { font-size: 11px; }
+  .wtable thead th, .wtable tbody td { padding: 6px 4px; }
+  .form-row, .ab-addrow { flex-direction: column; align-items: stretch; }
+  .form-row .form-field, .ab-addrow .form-field { min-width: 0; }
+}
+
+/* offline notice */
+#offline-note {
+  display: none;
+  background: var(--danger); color: #fff;
+  text-align: center; padding: 6px; font-size: 12px;
+}
+#offline-note.show { display: block; }
+</style>
+</head>
+<body>
+
+<div id="update-banner">
+  <span class="ub-text">🔄 Aggiornamento disponibile! Nuovi dati sono stati scaricati.</span>
+  <button class="ub-btn" onclick="location.reload()">Ricarica</button>
+  <button class="ub-close" onclick="document.getElementById('update-banner').classList.remove('show')">×</button>
+</div>
+
+<div id="offline-note">⚠️ Offline mode — dati in cache locale.</div>
+
+<!-- LOADING SCREEN -->
+<div id="loader">
+  <div class="loader-sigil">⚔️</div>
+  <div class="loader-text">Caricamento WH40K 11th Companion</div>
+  <div class="loader-bar"><div></div></div>
+</div>
+
+<!-- HEADER -->
+<header class="app-header">
+  <div class="app-title"><span class="sigil">⚔️</span> WH40K 11th Companion</div>
+  <nav class="tabs">
+    <button class="tab active" data-tab="datasheet">Datasheet</button>
+    <button class="tab" data-tab="rules">Core Rules</button>
+    <button class="tab" data-tab="builder">Army Builder</button>
+    <button class="tab" data-tab="gioco">Gioco</button>
+  </nav>
+</header>
+
+<main>
+  <!-- DATASHEET -->
+  <section id="tab-datasheet" class="tab-panel active">
+    <div class="controls">
+      <input class="search-box" id="ds-search" type="search" placeholder="🔍 Cerca unità...">
+      <select class="input" id="ds-faction"><option value="">Tutte le fazioni</option></select>
+    </div>
+    <div class="expand-bar">
+      <button class="btn small" id="ds-expand-all">Espandi tutto</button>
+      <button class="btn small" id="ds-collapse-all">Comprimi tutto</button>
+    </div>
+    <div id="ds-list"></div>
+  </section>
+
+  <!-- CORE RULES -->
+  <section id="tab-rules" class="tab-panel">
+    <div class="controls">
+      <input class="search-box" id="rules-search" type="search" placeholder="🔍 Cerca nelle regole...">
+    </div>
+    <div id="rules-list"></div>
+  </section>
+
+  <!-- ARMY BUILDER -->
+  <section id="tab-builder" class="tab-panel">
+    <div id="ab-container"></div>
+  </section>
+
+  <!-- GIOCO -->
+  <section id="tab-gioco" class="tab-panel">
+    <div id="gioco-container"></div>
+  </section>
+</main>
+
+<!-- DETAIL OVERLAY -->
+<div class="detail-overlay" id="detail-overlay">
+  <div class="detail-card" id="detail-card">
+    <button class="detail-close" id="detail-close" aria-label="Chiudi">✕</button>
+    <div id="detail-content"></div>
+  </div>
+</div>
+
+<!-- TOOLTIP POPUP -->
+<div id="tooltip-popup"><div class="tt-title"></div><div class="tt-desc"></div></div>
+
+<script>
+"use strict";
+
+/* ============ STATE ============ */
+var UNITS = [];
+var RULES = [];
+var COMPENDIUM = [];
+var TOOLTIPS = {};
+var FACTIONS = [];
+var LISTS = [];               // army builder lists
+var CURRENT_EDIT = null;      // {id} being edited
+var GIOCO_ARMY = null;        // selected army id for gioco tab
+var DATA_VERSION = 'wh40k11-v1';
+
+/* ============ BUILT-IN TOOLTIPS (fallback when data.tooltips absent) ============ */
+var BUILTIN_TOOLTIPS = {
+  "LETHAL HITS": "Attacchi che colpiscono (HIT) feriscono automaticamente (WOUND) — salta il tiro per ferire.",
+  "SUSTAINED HITS 1": "Per ogni tiro per colpire che ha successo, ottieni 1 colpo addizionale contro il bersaglio.",
+  "SUSTAINED HITS 2": "Per ogni tiro per colpire che ha successo, ottieni 2 colpi addizionali contro il bersaglio.",
+  "SUSTAINED HITS 3": "Per ogni tiro per colpire che ha successo, ottieni 3 colpi addizionali contro il bersaglio.",
+  "SUSTAINED HITS D3": "Per ogni tiro per colpire che ha successo, ottieni D3 colpi addizionali contro il bersaglio.",
+  "DEVASTATING WOUNDS": "Ogni tiro per ferire con successo infligge una quantità di danni mortali pari al valore di danno dell'arma, invece del danno normale.",
+  "IGNORES COVER": "I tiri per colpire di questa arma ignorano i modificatori di copertura del bersaglio.",
+  "PRECISION": "Puoi scegliere il modello del bersaglio nel PIC (Personaggio/Unità) colpito da questo attacco invece del proprietario dell'unità.",
+  "ASSAULT": "Le unità armate con armi Assault possono avanzare (Advance) e sparare nello stesso turno con penalità.",
+  "LANCE": "Quando tiri per ferire con questa arma contro un bersaglio con save da 2+, considera il tiro come AP-1 extra.",
+  "HAZARDOUS": "Dopo aver risolto gli attacchi con armi Hazardous, tira un dado per ogni arma Hazardous usata: con 1 subisci un danno mortale.",
+  "HEAVY": "Se il portatore è rimasto STATIONARY (fermo), aggiungi +1 ai tiri per colpire.",
+  "TWIN-LINKED": "Quando tiri per ferire con questa arma, puoi rilanciare i tiri per ferire falliti.",
+  "ONE SHOT": "Questa arma può essere sparata una sola volta per battaglia.",
+  "BLAST": "Aggiungi 1 al numero di attacchi per ogni 5 modelli nel bersaglio (arrotondando per difetto).",
+  "BLAST 1": "Aggiungi 1 al numero di attacchi per ogni 5 modelli nel bersaglio.",
+  "RAPID FIRE 1": "A metà gittata o meno, ottieni 1 attacco addizionale.",
+  "RAPID FIRE 8": "A metà gittata o meno, ottieni 8 attacchi addizionali.",
+  "INDIRECT FIRE": "Questa arma può sparare anche senza linea di vista, ma con -1 per colpire e senza modificatori di copertura.",
+  "PSYCHIC": "Questo attacco è psichico.",
+  "ANTI-INFANTRY 5+": "Quando tiri per ferire contro bersagli INFANTRY, un tiro di 5+ è sempre una ferita con successo.",
+  "ANTI-MONSTER 5+": "Quando tiri per ferire contro bersagli MONSTER, un tiro di 5+ è sempre una ferita con successo.",
+  "ANTI-VEHICLE 5+": "Quando tiri per ferire contro bersagli VEHICLE, un tiro di 5+ è sempre una ferita con successo.",
+  "ANTI-MONSTER 4+": "Quando tiri per ferire contro bersagli MONSTER, un tiro di 4+ è sempre una ferita con successo.",
+  "ANTI-VEHICLE 4+": "Quando tiri per ferire contro bersagli VEHICLE, un tiro di 4+ è sempre una ferita con successo.",
+  "ANTI-PSYKER 4+": "Quando tiri per ferire contro bersagli PSYKER, un tiro di 4+ è sempre una ferita con successo.",
+  "ANTI-TITANIC 3+": "Quando tiri per ferire contro bersagli TITANIC, un tiro di 3+ è sempre una ferita con successo.",
+  "Leader": "Un Personaggio con questa ability può essere assegnato (Attached) a un'unità non-Personaggio, formando un'unità combinata. Il Personaggio è considerato parte dell'unità finché non viene distrutto.",
+  "Deep Strike": "Questa unità può essere impostata in Riserva. Al termine del tuo turno di Movimento può essere deployata ovunque sul tavolo a più di 9\" da ogni unità nemica.",
+  "Feel No Pain": "Ogni volta che un modello di questa unità subisce ferite, tira un dado per ogni ferita; con il valore indicato la ferita viene ignorata.",
+  "Fights First": "Le unità con Fights First combattono prima delle unità senza questa ability nella Fight phase.",
+  "Scouts": "Dopo il deployment, puoi muovere questa unità di un numero di pollici pari al valore di Scout, ma non oltre la linea di metà tavolo.",
+  "Infiltrators": "Questa unità può essere deployata ovunque sul tavolo a più di 9\" dalla zona di deployment nemica e da ogni modello nemico.",
+  "Stealth": "Se ogni modello dell'unità ha questa ability, le unità nemiche hanno -1 per colpire con attacchi ranged.",
+  "Objective Secured": "Se controlli un objective marker alla fine della tua Command phase e questa unità è entro il raggio, quel marker rimane sotto il tuo controllo anche senza modelli entro raggio.",
+  "Oath of Moment": "Nella tua Command phase, seleziona un'unità nemica: fino alla tua prossima Command phase, le unità Space Marines hanno re-roll sui tiri per colpire contro quell'unità.",
+  "Deadly Demise": "Quando l'ultimo modello di questa unità viene distrutto, infligge D3 (o il valore indicato) ferite mortali a ogni unità nemica entro raggio.",
+  "Twin-linked": "Puoi rilanciare i tiri per ferire falliti con questa arma.",
+  "Battleline": "Le unità Battleline occupano uno slot dell'organizzazione dell'armata dedicato e possono essere prese più volte.",
+  "Character": "I Personaggi possono essere Attached ad altre unità e avere ability Leader.",
+  "CORE": "Ability Core: regole universali condivise da molte unità (Leader, Deep Strike, ecc.).",
+  "FACTION": "Ability Fazione: regole specifiche della fazione di appartenenza dell'unità."
+};
+
+/* ============ UTILITIES ============ */
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g, '&').replace(/</g, '<')
+    .replace(/>/g, '>').replace(/"/g, '"').replace(/'/g, '&#39;');
+}
+
+/* tt(): process text — wrap [KEYWORD] tags and known core ability names in tooltip spans */
+function tt(text) {
+  if (text == null) return '';
+  var s = escapeHtml(text);
+  // wrap [BRACKET] tags
+  s = s.replace(/\[([^\]]+)\]/g, function(m, name) {
+    var key = name.trim();
+    if (hasTooltip(key)) {
+      return '<span class="tooltip-trigger" data-key="' + key + '">[' + key + ']</span>';
+    }
+    return '<span class="wtag">[' + key + ']</span>';
+  });
+  // wrap known core ability words (case-sensitive whole word)
+  var known = getTooltipKeys();
+  for (var i = 0; i < known.length; i++) {
+    var k = known[i];
+    if (k.indexOf(' ') !== -1 || k.indexOf('-') !== -1) continue; // skip complex compound ones to avoid messy wrapping
+    var re = new RegExp('\\b(' + escapeRegex(k) + ')\\b', 'g');
+    s = s.replace(re, '<span class="tooltip-trigger" data-key="' + k + '">$1</span>');
+  }
+  return s;
+}
+
+function escapeRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function hasTooltip(key) {
+  var u = key.toUpperCase();
+  if (TOOLTIPS[key]) return true;
+  if (TOOLTIPS[u]) return true;
+  if (BUILTIN_TOOLTIPS[key]) return true;
+  if (BUILTIN_TOOLTIPS[u]) return true;
+  return false;
+}
+
+function getTooltipDesc(key) {
+  if (TOOLTIPS[key]) return TOOLTIPS[key];
+  if (BUILTIN_TOOLTIPS[key]) return BUILTIN_TOOLTIPS[key];
+  var u = key.toUpperCase();
+  if (TOOLTIPS[u]) return TOOLTIPS[u];
+  if (BUILTIN_TOOLTIPS[u]) return BUILTIN_TOOLTIPS[u];
+  return null;
+}
+
+function getTooltipKeys() {
+  var set = {};
+  var k;
+  for (k in BUILTIN_TOOLTIPS) set[k] = true;
+  for (k in TOOLTIPS) set[k] = true;
+  return Object.keys(set);
+}
+
+/* ============ DATA LOADING ============ */
+function loadData() {
+  return fetch('data.json', { cache: 'no-store' })
+    .then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function(d) {
+      try { localStorage.setItem(DATA_VERSION + '-data', JSON.stringify(d)); } catch(e) {}
+      return d;
+    })
+    .catch(function(err) {
+      // fallback to cache
+      try {
+        var cached = localStorage.getItem(DATA_VERSION + '-data');
+        if (cached) {
+          document.getElementById('offline-note').classList.add('show');
+          return JSON.parse(cached);
+        }
+      } catch(e2) {}
+      throw err;
+    });
+}
+
+/* ============ INIT ============ */
+function initApp(d) {
+  UNITS = d.units || [];
+  RULES = d.rules || [];
+  COMPENDIUM = d.compendium || [];
+  TOOLTIPS = d.tooltips || {};
+  // merge builtin tooltips under data tooltips (data wins)
+  var merged = {};
+  var k;
+  for (k in BUILTIN_TOOLTIPS) merged[k] = BUILTIN_TOOLTIPS[k];
+  for (k in TOOLTIPS) merged[k] = TOOLTIPS[k];
+  TOOLTIPS = merged;
+
+  // factions
+  var fset = {};
+  for (var i = 0; i < UNITS.length; i++) {
+    var f = UNITS[i].faction;
+    if (f) fset[f] = (fset[f] || 0) + 1;
+  }
+  FACTIONS = Object.keys(fset).sort();
+
+  populateFactionSelect();
+  renderDatasheet();
+  renderRules();
+  loadLists();
+  ensureTrialList();
+  renderArmyBuilder();
+  renderGioco();
+  attachTooltipListeners();
+}
+
+function populateFactionSelect() {
+  var sel = document.getElementById('ds-faction');
+  var cur = sel.value;
+  var html = '<option value="">Tutte le fazioni</option>';
+  for (var i = 0; i < FACTIONS.length; i++) {
+    html += '<option value="' + escapeHtml(FACTIONS[i]) + '">' + escapeHtml(FACTIONS[i]) + '</option>';
+  }
+  sel.innerHTML = html;
+  sel.value = cur;
+}
+
+/* ============ TABS ============ */
+function setupTabs() {
+  var tabs = document.querySelectorAll('.tab');
+  for (var i = 0; i < tabs.length; i++) {
+    tabs[i].addEventListener('click', function() {
+      var name = this.getAttribute('data-tab');
+      var allTabs = document.querySelectorAll('.tab');
+      var allPanels = document.querySelectorAll('.tab-panel');
+      for (var j = 0; j < allTabs.length; j++) allTabs[j].classList.remove('active');
+      for (var k2 = 0; k2 < allPanels.length; k2++) allPanels[k2].classList.remove('active');
+      this.classList.add('active');
+      document.getElementById('tab-' + name).classList.add('active');
+      if (name === 'builder') renderArmyBuilder();
+      if (name === 'gioco') renderGioco();
+    });
+  }
+}
+
+/* ============ DATASHEET ============ */
+function getFilteredUnits() {
+  var q = (document.getElementById('ds-search').value || '').trim().toLowerCase();
+  var fac = document.getElementById('ds-faction').value;
+  var out = [];
+  for (var i = 0; i < UNITS.length; i++) {
+    var u = UNITS[i];
+    if (fac && u.faction !== fac) continue;
+    if (q && u.name.toLowerCase().indexOf(q) === -1) continue;
+    out.push(u);
+  }
+  return out;
+}
+
+function renderDatasheet() {
+  var list = getFilteredUnits();
+  var container = document.getElementById('ds-list');
+  if (!list.length) {
+    container.innerHTML = '<div class="empty-state"><div class="es-icon">🔍</div>Nessuna unità trovata.</div>';
+    return;
+  }
+  // group by faction
+  var groups = {};
+  for (var i = 0; i < list.length; i++) {
+    var u = list[i];
+    var f = u.faction || 'Altro';
+    if (!groups[f]) groups[f] = { units: [], logo: u.faction_logo || '' };
+    groups[f].units.push(u);
+  }
+  var factions = Object.keys(groups).sort();
+  var html = '';
+  for (var fi = 0; fi < factions.length; fi++) {
+    var f = factions[fi];
+    var g = groups[f];
+    var logo = g.logo ? '<img class="faction-logo" src="' + escapeHtml(g.logo) + '" alt="" onerror="this.style.display=\'none\'">' : '';
+    html += '<details class="faction-section"' + (fi === 0 ? ' open' : '') + '>';
+    html += '<summary>' + logo + '<span class="faction-name">' + escapeHtml(f) + '</span>' +
+            '<span class="faction-count">' + g.units.length + '</span></summary>';
+    html += '<div class="unit-grid">';
+    for (var ui = 0; ui < g.units.length; ui++) {
+      html += renderUnitCard(g.units[ui]);
+    }
+    html += '</div></details>';
+  }
+  container.innerHTML = html;
+  // attach click handlers
+  var cards = container.querySelectorAll('.unit-card');
+  for (var c = 0; c < cards.length; c++) {
+    cards[c].addEventListener('click', function() {
+      var idx = parseInt(this.getAttribute('data-idx'), 10);
+      openDetail(idx);
+    });
+  }
+}
+
+function renderUnitCard(u) {
+  var idx = UNITS.indexOf(u);
+  var logo = u.faction_logo ? '<img class="uc-logo" src="' + escapeHtml(u.faction_logo) + '" alt="" onerror="this.style.display=\'none\'">' : '';
+  var pts = formatPoints(u.points);
+  var stats = u.stats || {};
+  var pills = '';
+  var order = ['M', 'T', 'SV', 'W', 'LD', 'OC'];
+  for (var i = 0; i < order.length; i++) {
+    var k = order[i];
+    if (stats[k] != null) {
+      pills += '<span class="stat-pill"><span class="lbl">' + k + '</span><span class="val">' + escapeHtml(stats[k]) + '</span></span>';
+    }
+  }
+  return '<div class="unit-card" data-idx="' + idx + '">' +
+    '<div class="uc-top">' + logo + '<span class="uc-name">' + escapeHtml(u.name) + '</span><span class="uc-pts">' + pts + 'pt</span></div>' +
+    '<div class="stat-pills">' + pills + '</div>' +
+    '</div>';
+}
+
+function formatPoints(p) {
+  if (!p) return '—';
+  if (typeof p === 'number') return p;
+  if (typeof p === 'string') return p;
+  var keys = Object.keys(p);
+  if (!keys.length) return '—';
+  if (keys.length === 1) return p[keys[0]];
+  return p[keys[0]] + '+';
+}
+
+/* ============ DETAIL VIEW ============ */
+function openDetail(idx) {
+  var u = UNITS[idx];
+  if (!u) return;
+  var c = document.getElementById('detail-content');
+  var stats = u.stats || {};
+  var logo = u.faction_logo ? '<img class="dh-logo" src="' + escapeHtml(u.faction_logo) + '" alt="" onerror="this.style.display=\'none\'">' : '';
+  var pts = formatPoints(u.points);
+  var html = '';
+
+  // header
+  html += '<div class="detail-header">';
+  html += logo;
+  html += '<div class="dh-info"><div class="dh-name">' + escapeHtml(u.name) + '</div>' +
+          '<div class="dh-faction">' + escapeHtml(u.faction) + '</div></div>';
+  html += '<div class="dh-pts">' + pts + ' pt</div>';
+  html += '<div class="dh-actions">';
+  if (u.image_search) {
+    html += '<a class="btn gold small" href="' + escapeHtml(u.image_search) + '" target="_blank" rel="noopener">Foto</a>';
+  }
+  html += '</div></div>';
+
+  html += '<div class="detail-body">';
+
+  // stats grid
+  var order = ['M', 'T', 'SV', 'W', 'LD', 'OC'];
+  html += '<div class="detail-section"><div class="stats-grid">';
+  for (var i = 0; i < order.length; i++) {
+    var k = order[i];
+    html += '<div class="stat-cell"><span class="lbl">' + k + '</span><span class="val">' + escapeHtml(stats[k] != null ? stats[k] : '—') + '</span></div>';
+  }
+  html += '</div></div>';
+
+  // ranged weapons
+  if (u.ranged && u.ranged.length) {
+    html += '<div class="detail-section"><div class="weapon-block">';
+    html += '<div class="weapon-block-title">⚔ Ranged Weapons</div>';
+    html += renderWeaponTable(u.ranged);
+    html += '</div></div>';
+  }
+
+  // melee weapons
+  if (u.melee && u.melee.length) {
+    html += '<div class="detail-section"><div class="weapon-block">';
+    html += '<div class="weapon-block-title">🗡 Melee Weapons</div>';
+    html += renderWeaponTable(u.melee);
+    html += '</div></div>';
+  }
+
+  // abilities
+  if (u.abilities && u.abilities.length) {
+    html += '<div class="detail-section"><h4>Abilities</h4>';
+    for (var ai = 0; ai < u.abilities.length; ai++) {
+      var ab = u.abilities[ai];
+      var nm = ab.name || '';
+      var typeBadge = '';
+      if (nm === 'CORE' || nm === 'FACTION' || nm === 'UNIT' || nm === 'WARGEAR') {
+        typeBadge = '<span class="ab-type">' + escapeHtml(nm) + '</span>';
+        nm = ab.desc || '';
+        html += '<div class="ability"><div class="ab-name">' + tt(nm) + typeBadge + '</div></div>';
+      } else {
+        html += '<div class="ability"><div class="ab-name">' + tt(nm) + '</div>' +
+                (ab.desc ? '<div class="ab-desc">' + tt(ab.desc) + '</div>' : '') + '</div>';
+      }
+    }
+    html += '</div>';
+  }
+
+  // keywords
+  var kws = [];
+  if (u.keywords) kws = kws.concat(u.keywords);
+  if (u.faction_keywords) kws = kws.concat(u.faction_keywords);
+  if (kws.length) {
+    html += '<div class="detail-section"><h4>Keywords</h4><div class="keyword-chips">';
+    for (var ki = 0; ki < kws.length; ki++) {
+      html += '<span class="kw-chip">' + tt(kws[ki]) + '</span>';
+    }
+    html += '</div></div>';
+  }
+
+  // composition
+  if (u.composition) {
+    html += '<div class="detail-section"><h4>Composizione</h4><div class="composition-box">' + escapeHtml(u.composition) + '</div></div>';
+  }
+
+  html += '</div>'; // detail-body
+  c.innerHTML = html;
+  document.getElementById('detail-overlay').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDetail() {
+  document.getElementById('detail-overlay').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+function renderWeaponTable(weapons) {
+  var html = '<div class="wtable-scroll"><table class="wtable"><thead><tr>';
+  html += '<th>Weapon</th><th>Range</th><th>A</th><th>BS</th><th>S</th><th>AP</th><th>D</th>';
+  html += '</tr></thead><tbody>';
+  for (var i = 0; i < weapons.length; i++) {
+    var w = weapons[i];
+    var nm = w.name || '';
+    var tags = '';
+    var cleanName = nm.replace(/\[([^\]]+)\]/g, function(m, tag) {
+      var t = tag.trim();
+      tags += ' <span class="wtag">' + tt('[' + t + ']') + '</span>';
+      return '';
+    }).trim();
+    html += '<tr>';
+    html += '<td class="w-name">' + escapeHtml(cleanName) + tags + '</td>';
+    html += '<td>' + escapeHtml(w.range != null ? w.range : '—') + '</td>';
+    html += '<td>' + escapeHtml(w.A != null ? w.A : '—') + '</td>';
+    html += '<td>' + escapeHtml(w.skill != null ? w.skill : '—') + '</td>';
+    html += '<td>' + escapeHtml(w.S != null ? w.S : '—') + '</td>';
+    html += '<td>' + escapeHtml(w.AP != null ? w.AP : '—') + '</td>';
+    html += '<td>' + escapeHtml(w.D != null ? w.D : '—') + '</td>';
+    html += '</tr>';
+  }
+  html += '</tbody></table></div>';
+  return html;
+}
+
+/* ============ CORE RULES ============ */
+function renderRules() {
+  var container = document.getElementById('rules-list');
+  applyRulesFilter();
+}
+
+function applyRulesFilter() {
+  var q = (document.getElementById('rules-search').value || '').trim().toLowerCase();
+  var container = document.getElementById('rules-list');
+  var html = '';
+
+  // Compendium
+  html += '<div class="section-title">Compendium</div>';
+  var compShown = 0;
+  for (var i = 0; i < COMPENDIUM.length; i++) {
+    var c = COMPENDIUM[i];
+    if (q && (c.title || '').toLowerCase().indexOf(q) === -1 && (c.body || '').toLowerCase().indexOf(q) === -1) continue;
+    html += '<div class="rule-card"><div class="rc-title">' + escapeHtml(c.title) + '</div><div class="rc-body">' + tt(c.body) + '</div></div>';
+    compShown++;
+  }
+  if (!compShown) html += '<div class="empty-state"><div class="es-icon">📜</div>Nessuna voce del compendio.</div>';
+
+  // Divider
+  html += '<div class="section-divider"><span>Regole Dettagliate</span></div>';
+
+  // Rules
+  var rulesShown = 0;
+  for (var j = 0; j < RULES.length; j++) {
+    var r = RULES[j];
+    if (q && (r.title || '').toLowerCase().indexOf(q) === -1 && (r.body || '').toLowerCase().indexOf(q) === -1) continue;
+    html += '<div class="rule-card"><div class="rc-title">' + escapeHtml(r.title) + '</div><div class="rc-body">' + tt(r.body) + '</div></div>';
+    rulesShown++;
+  }
+  if (!rulesShown) html += '<div class="empty-state"><div class="es-icon">📜</div>Nessuna regola dettagliata.</div>';
+
+  container.innerHTML = html;
+}
+
+/* ============ ARMY BUILDER ============ */
+var LS_KEY = 'wh40k11-lists';
+
+function loadLists() {
+  try {
+    var raw = localStorage.getItem(LS_KEY);
+    LISTS = raw ? JSON.parse(raw) : [];
+  } catch (e) { LISTS = []; }
+}
+
+function saveLists() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(LISTS)); } catch (e) {}
+}
+
+function genId() {
+  return 'L' + Date.now() + Math.floor(Math.random() * 1000);
+}
+
+function ensureTrialList() {
+  if (LISTS.length > 0) return;
+  // Find the trial units in Space Marines
+  var sm = [];
+  for (var i = 0; i < UNITS.length; i++) {
+    if (UNITS[i].faction === 'Space Marines') sm.push(UNITS[i]);
+  }
+  function findExact(name) {
+    for (var i = 0; i < sm.length; i++) {
+      if (sm[i].name.toLowerCase() === name.toLowerCase()) return sm[i];
+    }
+    return null;
+  }
+  var captain = findExact('Captain');
+  var inter = findExact('Intercessor Squad');
+  var term = findExact('Terminator Squad');
+  var dread = findExact('Dreadnought');
+
+  var units = [];
+  var total = 0;
+  function addUnit(u, models) {
+    if (!u) return;
+    var pts = unitPointsForModels(u, models);
+    units.push({ name: u.name, faction: u.faction, models: models, pts: pts });
+    total += pts;
+  }
+
+  if (captain && inter && term && dread) {
+    addUnit(captain, 1);
+    addUnit(inter, 5);
+    addUnit(inter, 5);
+    addUnit(term, 5);
+    addUnit(dread, 1);
+  } else {
+    // fallback: pick first SM units approaching ~1000pt
+    var budget = 1000;
+    for (var k = 0; k < sm.length && total < budget; k++) {
+      var u = sm[k];
+      var mp = firstPointsKey(u);
+      var p = u.points && u.points[mp] ? u.points[mp] : 0;
+      if (p && total + p <= budget) {
+        units.push({ name: u.name, faction: u.faction, models: parseInt(mp, 10) || 1, pts: p });
+        total += p;
+      }
+    }
+  }
+
+  LISTS.push({
+    id: genId(),
+    name: 'Space Marines - Prova 1000pt',
+    faction: 'Space Marines',
+    points: 1000,
+    units: units
+  });
+  saveLists();
+}
+
+function unitPointsForModels(u, models) {
+  if (!u.points) return 0;
+  if (typeof u.points === 'number') return u.points;
+  if (typeof u.points === 'string') return parseInt(u.points, 10) || 0;
+  // find closest key <= models, else first
+  var keys = Object.keys(u.points).map(function(k){ return parseInt(k, 10); }).sort(function(a,b){return a-b;});
+  var chosen = null;
+  for (var i = 0; i < keys.length; i++) {
+    if (keys[i] <= models) chosen = keys[i];
+    else break;
+  }
+  if (chosen == null) chosen = keys[0];
+  return u.points[String(chosen)] || 0;
+}
+
+function firstPointsKey(u) {
+  if (!u.points) return '1';
+  if (typeof u.points === 'number') return '1';
+  var keys = Object.keys(u.points);
+  return keys.length ? keys[0] : '1';
+}
+
+function renderArmyBuilder() {
+  var container = document.getElementById('ab-container');
+  if (CURRENT_EDIT) {
+    renderABEditor(container);
+  } else {
+    renderABListPage(container);
+  }
+}
+
+function renderABListPage(container) {
+  var html = '<div class="section-title">Le tue liste</div>';
+  html += '<button class="btn gold" id="ab-new">+ Nuova lista</button>';
+  html += '<div style="height:14px"></div>';
+  if (!LISTS.length) {
+    html += '<div class="empty-state"><div class="es-icon">📋</div>Nessuna lista salvata. Crea la prima!</div>';
+  } else {
+    for (var i = 0; i < LISTS.length; i++) {
+      var l = LISTS[i];
+      var total = listTotal(l);
+      html += '<div class="ab-list-item">';
+      html += '<div class="li-name">' + escapeHtml(l.name) + '</div>';
+      html += '<div class="li-meta">' + escapeHtml(l.faction) + ' · ' + l.units.length + ' unità · <span class="li-pts">' + total + '/' + l.points + 'pt</span></div>';
+      html += '<button class="btn small accent" data-edit="' + l.id + '">Modifica</button>';
+      html += '<button class="btn small danger" data-del="' + l.id + '">Elimina</button>';
+      html += '</div>';
+    }
+  }
+  container.innerHTML = html;
+
+  var newBtn = document.getElementById('ab-new');
+  if (newBtn) newBtn.addEventListener('click', function() {
+    CURRENT_EDIT = { stage: 'new' };
+    renderArmyBuilder();
+  });
+  var editBtns = container.querySelectorAll('[data-edit]');
+  for (var e = 0; e < editBtns.length; e++) {
+    editBtns[e].addEventListener('click', function() {
+      CURRENT_EDIT = { id: this.getAttribute('data-edit'), stage: 'edit' };
+      renderArmyBuilder();
+    });
+  }
+  var delBtns = container.querySelectorAll('[data-del]');
+  for (var d = 0; d < delBtns.length; d++) {
+    delBtns[d].addEventListener('click', function() {
+      var id = this.getAttribute('data-del');
+      if (confirm('Eliminare definitivamente questa lista?')) {
+        LISTS = LISTS.filter(function(x){ return x.id !== id; });
+        saveLists();
+        renderArmyBuilder();
+        renderGioco();
+      }
+    });
+  }
+}
+
+function renderABEditor(container) {
+  if (CURRENT_EDIT.stage === 'new') {
+    renderABNewForm(container);
+    return;
+  }
+  // edit existing
+  var list = getListById(CURRENT_EDIT.id);
+  if (!list) { CURRENT_EDIT = null; renderArmyBuilder(); return; }
+  renderABEditForm(container, list);
+}
+
+function renderABNewForm(container) {
+  var html = '<div class="ab-stage">';
+  html += '<div class="section-title">Nuova lista</div>';
+  html += '<div class="form-row">';
+  html += '<div class="form-field"><label>Nome lista</label><input class="input" id="ab-name" type="text" placeholder="es. Crimson Fists 2000pt" value=""></div>';
+  html += '<div class="form-field"><label>Fazione</label><select class="input" id="ab-faction">';
+  for (var i = 0; i < FACTIONS.length; i++) {
+    html += '<option value="' + escapeHtml(FACTIONS[i]) + '">' + escapeHtml(FACTIONS[i]) + '</option>';
+  }
+  html += '</select></div>';
+  html += '<div class="form-field"><label>Punti</label><select class="input" id="ab-points"><option value="1000">1000</option><option value="2000" selected>2000</option><option value="3000">3000</option></select></div>';
+  html += '</div>';
+  html += '<div style="display:flex;gap:8px"><button class="btn gold" id="ab-create">Crea</button>';
+  html += '<button class="btn" id="ab-cancel">Annulla</button></div>';
+  html += '</div>';
+  container.innerHTML = html;
+  document.getElementById('ab-create').addEventListener('click', function() {
+    var name = document.getElementById('ab-name').value.trim() || ('Lista ' + (LISTS.length + 1));
+    var fac = document.getElementById('ab-faction').value;
+    var pts = parseInt(document.getElementById('ab-points').value, 10);
+    var newList = {
+      id: genId(),
+      name: name,
+      faction: fac,
+      points: pts,
+      units: []
+    };
+    LISTS.push(newList);
+    saveLists();
+    CURRENT_EDIT = { id: newList.id, stage: 'edit' };
+    renderArmyBuilder();
+  });
+  document.getElementById('ab-cancel').addEventListener('click', function() {
+    CURRENT_EDIT = null;
+    renderArmyBuilder();
+  });
+}
+
+function renderABEditForm(container, list) {
+  var html = '<div class="ab-stage">';
+  html += '<div class="section-title">Editor: ' + escapeHtml(list.name) + '</div>';
+  // Editable params: name, faction, points
+  html += '<div class="form-row" style="margin-bottom:12px;gap:8px;flex-wrap:wrap">';
+  html += '<div class="form-field" style="flex:1;min-width:180px"><label>Nome lista</label><input class="input" id="ab-edit-name" value="' + escapeHtml(list.name) + '">';
+  html += '</div><div class="form-field" style="flex:1;min-width:160px"><label>Fazione</label><select class="input" id="ab-edit-faction">';
+  for (var fi = 0; fi < FACTIONS.length; fi++) {
+    html += '<option value="' + escapeHtml(FACTIONS[fi]) + '"' + (FACTIONS[fi] === list.faction ? ' selected' : '') + '>' + escapeHtml(FACTIONS[fi]) + '</option>';
+  }
+  html += '</select></div><div class="form-field" style="flex:0 0 120px"><label>Punti</label><select class="input" id="ab-edit-points">';
+  var ptsOpts = [1000, 2000, 3000];
+  for (var pi = 0; pi < ptsOpts.length; pi++) {
+    html += '<option value="' + ptsOpts[pi] + '"' + (ptsOpts[pi] === list.points ? ' selected' : '') + '>' + ptsOpts[pi] + ' pt</option>';
+  }
+  html += '</select></div></div>';
+
+  // unit add row
+  var facUnits = [];
+  for (var i = 0; i < UNITS.length; i++) {
+    if (UNITS[i].faction === list.faction) facUnits.push(UNITS[i]);
+  }
+  html += '<div class="ab-addrow">';
+  html += '<div class="form-field" style="flex:2"><label>Unità</label><select class="input" id="ab-unitsel">';
+  for (var u = 0; u < facUnits.length; u++) {
+    html += '<option value="' + u + '">' + escapeHtml(facUnits[u].name) + ' (' + formatPoints(facUnits[u].points) + 'pt)</option>';
+  }
+  html += '</select></div>';
+  html += '<div class="form-field" style="flex:0 0 100px"><label>N° modelli</label><input class="input" id="ab-models" type="number" min="1" value="1" style="width:90px"></div>';
+  html += '<button class="btn accent" id="ab-addunit" style="align-self:end">Aggiungi</button>';
+  html += '</div>';
+
+  // units list
+  html += '<div id="ab-units-list"></div>';
+
+  // points bar
+  var total = listTotal(list);
+  var pct = list.points ? Math.min(100, Math.round(total / list.points * 100)) : 0;
+  var over = total > list.points;
+  var remain = list.points - total;
+  html += '<div class="points-bar-wrap">';
+  html += '<div class="points-bar' + (over ? ' over' : '') + '"><div style="width:' + (over ? 100 : pct) + '%"></div></div>';
+  html += '<div class="points-info"><span class="pi-total">' + total + ' / ' + list.points + ' pt</span>';
+  html += '<span class="pi-remain">' + (over ? '<span style="color:var(--danger)">+' + (-remain) + ' oltre</span>' : remain + ' pt rimanenti') + '</span></div>';
+  html += '</div>';
+
+  // actions
+  html += '<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">';
+  html += '<button class="btn gold" id="ab-save">Salva</button>';
+  html += '<button class="btn accent" id="ab-saveback">Salva e torna</button>';
+  html += '<button class="btn danger" id="ab-delete">Elimina lista</button>';
+  html += '</div>';
+  html += '</div>';
+  container.innerHTML = html;
+
+  renderABUnitsList(list);
+
+  // Apply param changes on-the-fly
+  var nameInput = document.getElementById('ab-edit-name');
+  var factionSel = document.getElementById('ab-edit-faction');
+  var pointsSel = document.getElementById('ab-edit-points');
+  if (nameInput) nameInput.addEventListener('input', function() {
+    list.name = nameInput.value;
+    document.querySelector('.section-title').textContent = 'Editor: ' + list.name;
+    renderABUnitsList(list);
+    var total2 = listTotal(list);
+    var pct2 = list.points ? Math.min(100, Math.round(total2 / list.points * 100)) : 0;
+    var pb = document.querySelector('.points-bar > div');
+    if (pb) pb.style.width = (total2 > list.points ? 100 : pct2) + '%';
+    var pi = document.querySelector('.pi-total');
+    if (pi) pi.textContent = total2 + ' / ' + list.points + ' pt';
+  });
+  if (factionSel) factionSel.addEventListener('change', function() {
+    list.faction = factionSel.value;
+    renderABEditForm(container, list);
+  });
+  if (pointsSel) pointsSel.addEventListener('change', function() {
+    list.points = parseInt(pointsSel.value, 10);
+    var total3 = listTotal(list);
+    var pct3 = Math.min(100, Math.round(total3 / list.points * 100));
+    var over3 = total3 > list.points;
+    var pb3 = document.querySelector('.points-bar');
+    if (pb3) pb3.className = 'points-bar' + (over3 ? ' over' : '');
+    var pb3d = document.querySelector('.points-bar > div');
+    if (pb3d) pb3d.style.width = (over3 ? 100 : pct3) + '%';
+    var pi3 = document.querySelector('.pi-total');
+    if (pi3) pi3.textContent = total3 + ' / ' + list.points + ' pt';
+    var pr3 = document.querySelector('.pi-remain');
+    if (pr3) {
+      var remain3 = list.points - total3;
+      pr3.innerHTML = over3 ? '<span style="color:var(--danger)">+' + (-remain3) + ' oltre</span>' : remain3 + ' pt rimanenti';
+    }
+  });
+
+  document.getElementById('ab-addunit').addEventListener('click', function() {
+    var selIdx = parseInt(document.getElementById('ab-unitsel').value, 10);
+    var models = parseInt(document.getElementById('ab-models').value, 10) || 1;
+    var unit = facUnits[selIdx];
+    if (!unit) return;
+    var pts = unitPointsForModels(unit, models);
+    list.units.push({ name: unit.name, faction: unit.faction, models: models, pts: pts });
+    saveLists();
+    renderArmyBuilder();
+    renderGioco();
+  });
+
+  document.getElementById('ab-save').addEventListener('click', function() {
+    saveLists();
+    flashSaved();
+  });
+  document.getElementById('ab-saveback').addEventListener('click', function() {
+    saveLists();
+    CURRENT_EDIT = null;
+    renderArmyBuilder();
+    renderGioco();
+  });
+  document.getElementById('ab-delete').addEventListener('click', function() {
+    if (confirm('Eliminare definitivamente la lista "' + list.name + '"?')) {
+      LISTS = LISTS.filter(function(x){ return x.id !== list.id; });
+      saveLists();
+      CURRENT_EDIT = null;
+      renderArmyBuilder();
+      renderGioco();
+    }
+  });
+}
+
+function renderABUnitsList(list) {
+  var el = document.getElementById('ab-units-list');
+  if (!list.units.length) {
+    el.innerHTML = '<div class="empty-state" style="padding:20px"><div class="es-icon">🪖</div>Nessuna unità aggiunta.</div>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < list.units.length; i++) {
+    var u = list.units[i];
+    html += '<div class="ab-unit-item">';
+    html += '<span class="un-name">' + escapeHtml(u.name) + '</span>';
+    html += '<span class="un-models">' + u.models + ' modelli</span>';
+    html += '<span class="un-pts">' + u.pts + 'pt</span>';
+    html += '<button class="btn small danger" data-rm="' + i + '">✕</button>';
+    html += '</div>';
+  }
+  el.innerHTML = html;
+  var btns = el.querySelectorAll('[data-rm]');
+  for (var b = 0; b < btns.length; b++) {
+    btns[b].addEventListener('click', function() {
+      var idx = parseInt(this.getAttribute('data-rm'), 10);
+      list.units.splice(idx, 1);
+      saveLists();
+      renderArmyBuilder();
+      renderGioco();
+    });
+  }
+}
+
+function listTotal(list) {
+  var t = 0;
+  for (var i = 0; i < list.units.length; i++) t += (list.units[i].pts || 0);
+  return t;
+}
+
+function getListById(id) {
+  for (var i = 0; i < LISTS.length; i++) {
+    if (LISTS[i].id === id) return LISTS[i];
+  }
+  return null;
+}
+
+function flashSaved() {
+  var btn = document.getElementById('ab-save');
+  if (!btn) return;
+  var orig = btn.textContent;
+  btn.textContent = '✓ Salvato';
+  btn.style.background = 'var(--success)';
+  setTimeout(function() { btn.textContent = orig; btn.style.background = ''; }, 1200);
+}
+
+/* ============ GIOCO ============ */
+function renderGioco() {
+  var container = document.getElementById('gioco-container');
+  if (GIOCO_ARMY) {
+    var list = getListById(GIOCO_ARMY);
+    if (!list) { GIOCO_ARMY = null; renderGioco(); return; }
+    renderGiocoArmy(container, list);
+  } else {
+    renderGiocoSelect(container);
+  }
+}
+
+function renderGiocoSelect(container) {
+  var html = '<div class="section-title">Seleziona un\'armata con cui giocare</div>';
+  if (!LISTS.length) {
+    html += '<div class="empty-state"><div class="es-icon">⚔️</div>Nessuna lista disponibile. Vai in Army Builder per crearne una.</div>';
+    container.innerHTML = html;
+    return;
+  }
+  html += '<div class="ab-stage">';
+  html += '<div class="form-row"><div class="form-field" style="flex:1"><label>Lista</label><select class="input" id="gioco-sel">';
+  for (var i = 0; i < LISTS.length; i++) {
+    var l = LISTS[i];
+    html += '<option value="' + l.id + '">' + escapeHtml(l.name) + ' (' + listTotal(l) + '/' + l.points + 'pt · ' + escapeHtml(l.faction) + ')</option>';
+  }
+  html += '</select></div></div>';
+  html += '<button class="btn gold" id="gioco-load">Carica</button>';
+  html += '</div>';
+  container.innerHTML = html;
+  document.getElementById('gioco-load').addEventListener('click', function() {
+    GIOCO_ARMY = document.getElementById('gioco-sel').value;
+    renderGioco();
+  });
+}
+
+function renderGiocoArmy(container, list) {
+  var total = listTotal(list);
+  var html = '<div class="gioco-army-header">';
+  html += '<div class="gh-name">' + escapeHtml(list.name) + '</div>';
+  html += '<div class="gh-meta">' + escapeHtml(list.faction) + ' · ' + total + '/' + list.points + 'pt · ' + list.units.length + ' unità</div>';
+  html += '<button class="btn small" id="gioco-change">Cambia armata</button>';
+  html += '</div>';
+  html += '<div class="expand-bar"><button class="btn small" id="gioco-expand">Espandi tutto</button><button class="btn small" id="gioco-collapse">Comprimi tutto</button></div>';
+  if (!list.units.length) {
+    html += '<div class="empty-state"><div class="es-icon">🪖</div>Questa lista non ha unità.</div>';
+  } else {
+    for (var i = 0; i < list.units.length; i++) {
+      html += renderGiocoUnit(list.units[i], i);
+    }
+  }
+  container.innerHTML = html;
+
+  document.getElementById('gioco-change').addEventListener('click', function() {
+    GIOCO_ARMY = null;
+    renderGioco();
+  });
+  document.getElementById('gioco-expand').addEventListener('click', function() {
+    var ds = container.querySelectorAll('.gioco-unit');
+    for (var i = 0; i < ds.length; i++) ds[i].open = true;
+  });
+  document.getElementById('gioco-collapse').addEventListener('click', function() {
+    var ds = container.querySelectorAll('.gioco-unit');
+    for (var i = 0; i < ds.length; i++) ds[i].open = false;
+  });
+}
+
+function renderGiocoUnit(lu, idx) {
+  // find the actual unit data for stats/weapons
+  var u = null;
+  for (var i = 0; i < UNITS.length; i++) {
+    if (UNITS[i].name === lu.name && UNITS[i].faction === lu.faction) { u = UNITS[i]; break; }
+  }
+  var html = '<details class="gioco-unit"' + (idx === 0 ? ' open' : '') + '>';
+  html += '<summary><span class="gu-name">' + escapeHtml(lu.name) + '</span>';
+  html += '<span class="gu-models">' + lu.models + ' modelli</span>';
+  html += '<span class="gu-pts">' + lu.pts + 'pt</span></summary>';
+  html += '<div class="gu-body">';
+  if (u) {
+    var stats = u.stats || {};
+    var order = ['M', 'T', 'SV', 'W', 'LD', 'OC'];
+    html += '<div class="stats-grid">';
+    for (var s = 0; s < order.length; s++) {
+      var k = order[s];
+      html += '<div class="stat-cell"><span class="lbl">' + k + '</span><span class="val">' + escapeHtml(stats[k] != null ? stats[k] : '—') + '</span></div>';
+    }
+    html += '</div>';
+    if (u.ranged && u.ranged.length) {
+      html += '<div class="weapon-block"><div class="weapon-block-title">⚔ Ranged</div>' + renderWeaponTable(u.ranged) + '</div>';
+    }
+    if (u.melee && u.melee.length) {
+      html += '<div class="weapon-block"><div class="weapon-block-title">🗡 Melee</div>' + renderWeaponTable(u.melee) + '</div>';
+    }
+    if (u.abilities && u.abilities.length) {
+      html += '<h4 style="color:var(--gold);font-size:12px;text-transform:uppercase;margin:8px 0 6px">Abilities</h4>';
+      for (var ai = 0; ai < u.abilities.length; ai++) {
+        var ab = u.abilities[ai];
+        var nm = ab.name || '';
+        if (nm === 'CORE' || nm === 'FACTION' || nm === 'UNIT' || nm === 'WARGEAR') {
+          html += '<div class="ability"><div class="ab-name">' + tt(ab.desc || '') + '<span class="ab-type">' + escapeHtml(nm) + '</span></div></div>';
+        } else {
+          html += '<div class="ability"><div class="ab-name">' + tt(nm) + '</div>' + (ab.desc ? '<div class="ab-desc">' + tt(ab.desc) + '</div>' : '') + '</div>';
+        }
+      }
+    }
+  } else {
+    html += '<div class="empty-state" style="padding:14px">Dati unità non disponibili.</div>';
+  }
+  html += '</div></details>';
+  return html;
+}
+
+/* ============ DATASHEET expand/collapse ============ */
+function setupDatasheetControls() {
+  document.getElementById('ds-search').addEventListener('input', renderDatasheet);
+  document.getElementById('ds-faction').addEventListener('change', renderDatasheet);
+  document.getElementById('ds-expand-all').addEventListener('click', function() {
+    var ds = document.querySelectorAll('#ds-list .faction-section');
+    for (var i = 0; i < ds.length; i++) ds[i].open = true;
+  });
+  document.getElementById('ds-collapse-all').addEventListener('click', function() {
+    var ds = document.querySelectorAll('#ds-list .faction-section');
+    for (var i = 0; i < ds.length; i++) ds[i].open = false;
+  });
+  document.getElementById('rules-search').addEventListener('input', applyRulesFilter);
+  document.getElementById('detail-close').addEventListener('click', closeDetail);
+  document.getElementById('detail-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeDetail();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeDetail();
+  });
+}
+
+/* ============ TOOLTIP SYSTEM ============ */
+var TT_TIMEOUT = null;
+function attachTooltipListeners() {
+  var root = document.body;
+  // event delegation
+  root.addEventListener('mouseenter', function(e) {
+    var t = e.target;
+    if (t.classList && t.classList.contains('tooltip-trigger')) {
+      showTooltip(t, e);
+    }
+  }, true);
+  root.addEventListener('mouseleave', function(e) {
+    var t = e.target;
+    if (t.classList && t.classList.contains('tooltip-trigger')) {
+      hideTooltip();
+    }
+  }, true);
+  // touch support
+  root.addEventListener('touchstart', function(e) {
+    var t = e.target;
+    if (t.classList && t.classList.contains('tooltip-trigger')) {
+      e.preventDefault();
+      showTooltip(t);
+      if (TT_TIMEOUT) clearTimeout(TT_TIMEOUT);
+      TT_TIMEOUT = setTimeout(hideTooltip, 3000);
+    }
+  }, { passive: false });
+}
+
+function showTooltip(el, evt) {
+  var key = el.getAttribute('data-key');
+  var desc = getTooltipDesc(key);
+  if (!desc) desc = 'Nessuna descrizione disponibile.';
+  var popup = document.getElementById('tooltip-popup');
+  popup.querySelector('.tt-title').textContent = key;
+  popup.querySelector('.tt-desc').textContent = desc;
+  popup.classList.add('show');
+  positionTooltip(el, evt);
+}
+
+function positionTooltip(el, evt) {
+  var popup = document.getElementById('tooltip-popup');
+  var rect = el.getBoundingClientRect();
+  var pw = popup.offsetWidth;
+  var ph = popup.offsetHeight;
+  var x, y;
+  if (evt && evt.clientX != null) {
+    x = evt.clientX + 14;
+    y = evt.clientY + 14;
+  } else {
+    x = rect.left + rect.width / 2 - pw / 2;
+    y = rect.bottom + 8;
+  }
+  if (x + pw > window.innerWidth - 8) x = window.innerWidth - pw - 8;
+  if (x < 8) x = 8;
+  if (y + ph > window.innerHeight - 8) y = rect.top - ph - 8;
+  if (y < 8) y = 8;
+  popup.style.left = x + 'px';
+  popup.style.top = y + 'px';
+}
+
+function hideTooltip() {
+  document.getElementById('tooltip-popup').classList.remove('show');
+  if (TT_TIMEOUT) { clearTimeout(TT_TIMEOUT); TT_TIMEOUT = null; }
+}
+
+/* ============ UPDATE BANNER ============ */
+#update-banner {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 10000;
+  background: linear-gradient(135deg, var(--gold), #b8860b);
+  color: #1a1a2e; font-weight: 700; font-size: 13px;
+  padding: 10px 16px; display: none;
+  align-items: center; justify-content: space-between; gap: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+}
+#update-banner.show { display: flex; }
+#update-banner .ub-text { flex: 1; }
+#update-banner .ub-btn {
+  background: #1a1a2e; color: var(--gold); border: none;
+  padding: 6px 16px; border-radius: 6px; font-weight: 700;
+  cursor: pointer; font-size: 12px; white-space: nowrap;
+}
+#update-banner .ub-close {
+  background: transparent; color: #1a1a2e; border: none;
+  font-size: 18px; cursor: pointer; padding: 0 4px; line-height: 1;
+}
+
+/* ============
+SERVICE WORKER ============ */
+function registerSW() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').then(function(reg) {
+      // Controlla aggiornamenti quando la pagina si avvia
+      reg.update();
+      // Controlla aggiornamenti ogni volta che la pagina torna visibile
+      document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) reg.update();
+      });
+    }).catch(function(e) {
+      console.warn('SW registration failed:', e);
+    });
+
+    // Ascolta messaggi dal Service Worker
+    navigator.serviceWorker.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'sw-activated') {
+        // Il SW è stato aggiornato, scarica i nuovi dati in background
+        if (navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage('check-update');
+        }
+      }
+      if (e.data && e.data.type === 'update-ready') {
+        // Nuova versione scaricata — mostra il banner
+        var banner = document.getElementById('update-banner');
+        if (banner) banner.classList.add('show');
+      }
+    });
+
+    // Rileva quando un nuovo SW prende il controllo
+    navigator.serviceWorker.addEventListener('controllerchange', function() {
+      var banner = document.getElementById('update-banner');
+      if (banner) banner.classList.add('show');
+    });
+  }
+}
+
+/* ============ START ============ */
+function start() {
+  setupTabs();
+  setupDatasheetControls();
+  loadData().then(function(d) {
+    initApp(d);
+    document.getElementById('loader').classList.add('hide');
+    setTimeout(function() {
+      var l = document.getElementById('loader');
+      if (l) l.style.display = 'none';
+    }, 500);
+  }).catch(function(err) {
+    console.error('Data load failed:', err);
+    var loader = document.getElementById('loader');
+    loader.innerHTML = '<div class="loader-sigil">⚠️</div>' +
+      '<div class="loader-text" style="color:var(--danger)">Errore caricamento data.json</div>' +
+      '<div style="color:var(--text-dim);font-size:12px;max-width:320px;text-align:center">' +
+      escapeHtml(String(err)) + '<br><br>Assicurati che data.json sia nella stessa cartella di index.html.</div>';
+  });
+  registerSW();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', start);
+} else {
+  start();
+}
+</script>
+</body>
+</html>
